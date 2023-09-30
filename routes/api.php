@@ -17,3 +17,19 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::group(['middleware' => 'auth:sanctum', 'namespace' => 'Api'], function () {
+    Route::group(['prefix' => 'v1'], function () {
+        Route::group(['namespace' => 'v1'], function () {
+            Route::group(['namespace' => 'Contacts'], static function () {
+//                Route::get('', [ContactController::class, 'index']);
+//                Route::post('', [ContactController::class, 'store']);
+//                Route::get('{id}', [ContactController::class, 'show']);
+//                Route::put('{id}', [ContactController::class, 'update']);
+//                Route::delete('{id}', [ContactController::class, 'destroy']);
+                Route::apiResource('contacts', 'ContactController');
+
+            });
+        });
+    });
+});
