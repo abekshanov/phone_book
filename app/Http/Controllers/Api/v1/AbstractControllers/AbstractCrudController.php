@@ -17,6 +17,14 @@ use Illuminate\Validation\ValidationException;
 
 abstract class AbstractCrudController extends Controller
 {
+    /**
+     * @var string
+     */
+    protected static string $entity_class;
+
+    /**
+     * @var ControllerFactoryInterface
+     */
     private ControllerFactoryInterface $factory;
 
     /**
@@ -29,16 +37,16 @@ abstract class AbstractCrudController extends Controller
 
     /**
      * @param  Request  $request
-     * @return JsonResource
-     * @throws ValidationException
+     * @return JsonResponse
      * @throws AuthorizationException
+     * @throws ValidationException
      */
-    public function index(Request $request): JsonResource
+    public function index(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $this->authorize('viewAny');
+        $this->authorize('viewAny', static::$entity_class);
 
         $validation = $this->factory->createIndexValidation();
         $data = $validation->validateCustomData($request->all());
@@ -55,10 +63,10 @@ abstract class AbstractCrudController extends Controller
 
     /**
      * @param  int  $id
-     * @return JsonResource
+     * @return JsonResponse
      * @throws AuthorizationException|ValidationException
      */
-    public function show(int $id): JsonResource
+    public function show(int $id): JsonResponse
     {
         $validation = $this->factory->createShowValidation();
         $data = $validation->validateCustomData(
@@ -77,11 +85,11 @@ abstract class AbstractCrudController extends Controller
 
     /**
      * @param  Request  $request
-     * @return JsonResource
+     * @return JsonResponse
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function store(Request $request): JsonResource
+    public function store(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = Auth::user();
@@ -89,14 +97,14 @@ abstract class AbstractCrudController extends Controller
         $validation = $this->factory->createStoreValidation();
         $data = $validation->validateCustomData($request->all());
 
-        $this->authorize('create');
+        $this->authorize('create', static::$entity_class);
 
         $data = $this->addUserId($data, $user->id);
 
         $service = $this->factory->createService();
         $model = $service->create($data);
 
-        $resource = $this->factory->createStoreResource($model);
+        $resource = $this->factory->createStoreResource($model->refresh());
 
         return $this->response($resource);
     }
@@ -104,11 +112,11 @@ abstract class AbstractCrudController extends Controller
     /**
      * @param  Request  $request
      * @param  int  $id
-     * @return JsonResource
+     * @return JsonResponse
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function update(Request $request, int $id): JsonResource
+    public function update(Request $request, int $id): JsonResponse
     {
         $request_data = $request->all();
         $request_data['id'] = $id;
@@ -131,11 +139,11 @@ abstract class AbstractCrudController extends Controller
 
     /**
      * @param  int  $id
-     * @return JsonResource
+     * @return JsonResponse
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function destroy(int $id): JsonResource
+    public function destroy(int $id): JsonResponse
     {
         $validation = $this->factory->createDestroyValidation();
         $data = $validation->validateCustomData(

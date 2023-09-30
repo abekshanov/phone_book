@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $surname
  * @property string $phone
  * @property int $user_id
- * @property bool $favorite
+ * @property bool $favourite
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -23,4 +23,10 @@ class Contact extends Model
      * @var string[]
      */
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'created_at' => 'string',
+        'updated_at' => 'string',
+        'favourite' => 'boolean',
+    ];
 }

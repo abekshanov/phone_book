@@ -4,7 +4,7 @@ namespace App\Validations\Contacts;
 
 use App\Validations\AbstractValidation;
 
-class ContactShowValidation extends AbstractValidation
+class ContactDestroyValidation extends AbstractValidation
 {
     protected function getRules(): array
     {
