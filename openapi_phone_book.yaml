@@ -1,0 +1,330 @@
+openapi: 3.0.3
+info:
+  title: Phone book web application
+  version: 0.0.1
+servers:
+  - url: http://localhost
+    description: Local Server
+tags:
+  - name: contacts
+    description: phone contacts entity
+paths:
+  /contacts:
+    get:
+      tags:
+        - contacts
+      summary: Get list client's contacts
+      description: Get list client's contacts
+      operationId: getListContacts
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contacts'          
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'                 
+
+    post:
+      tags:
+        - contacts
+      summary: Add a new contact
+      description: Add a new contact to the phone book
+      operationId: contactsCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactModel'
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'   
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'            
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/422'            
+  /contacts/{id}:  
+    get:
+      tags:
+        - contacts
+      summary: Show an existing contact
+      description: Show an existing contact by Id
+      operationId: showContact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: contact id
+          example: 10
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactModel'          
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'   
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'            
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/422'   
+    put:
+      tags:
+        - contacts
+      summary: Update an existing contact
+      description: Update an existing contact by Id
+      operationId: updateContact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: contact id
+          example: 10
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactModel'          
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'   
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'            
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/422'   
+    delete:
+      tags:
+        - contacts
+      summary: Delete an existing contact
+      description: Delete an existing contact by Id
+      operationId: deleteContact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: contact id
+          example: 10
+      responses:
+        '204':
+          description: Successful operation
+          content:
+            application/json: {}          
+        '401':
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/401'   
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/403'            
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/422'   
+
+components:
+  schemas:
+    ContactModel:
+      allOf:
+        - type: object
+          required:
+            - first_name
+            - last_name
+            - phone
+          properties:
+    
+            id:
+              type: integer
+              format: int64
+              example: 10
+            created_at:
+              type: string
+              example: 2023-09-30 22:18:15
+            updated_at:
+              type: string
+              example: 2023-09-30 22:18:15   
+        - $ref: "#/components/schemas/Contact" 
+          
+    Contact:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - phone
+      properties:
+        first_name:
+          type: string
+          example: Ivan
+        surname:
+          type: string
+          example: Ivanovich
+        last_name:
+          type: string
+          example: Ivanov
+        phone:
+          type: string
+          description: phone number
+          example: 79009009090
+        favourite:
+          type: boolean
+          example: true
+             
+    Contacts:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contact"
+        current_page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 1   
+        total:
+          type: integer
+          example: 2            
+        first_page_url:
+          type: string
+          example: http://localhost/api/v1/contacts?page=1
+        last_page_url:
+          type: string
+          example: http://localhost/api/v1/contacts?page=2
+        next_page_url:
+          type: string
+          example: http://localhost/api/v1/contacts?page=2
+        path:
+          type: string
+          example: http://localhost/api/v1/contacts
+        from:
+          type: integer
+          example: 1
+        to:
+          type: integer
+          example: 2          
+        last_page:
+          type: integer
+          example: 2
+        links:
+          type: array
+          items:
+            $ref: "#/components/schemas/Links"
+          
+    Links:
+      type: object
+      properties:
+        url:
+          type: string
+          example: http://localhost/api/v1/contacts?page=1
+        label:
+          type: string
+          example: "1"
+        active:
+          type: boolean
+          example: true
+          
+    422:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Validation error
+        errors:
+          type: object
+    403:
+      type: object
+      properties:
+        message:
+          type: string
+          example: This action is unauthorized.
+        exception: 
+          type: object
+    401:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Unauthenticated
+
+
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
