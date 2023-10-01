@@ -2,46 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\AbstractControllers\AbstractCrudController;
 use App\Models\Contact;
-use Illuminate\Http\Request;
+use Inertia\Response;
+use Inertia\ResponseFactory;
 
-class ContactController extends Controller
+class ContactController extends AbstractCrudController
 {
     /**
-     * Display a listing of the resource.
+     * @var string
      */
-    public function index()
-    {
-        $contacts = Contact::paginate(10);
-//        dd($contacts);
-//        $contacts = Contact::all();
-        return inertia('Contact/Index', compact('contacts'));
-    }
+    protected static string $entity_class = Contact::class;
 
     /**
-     * Show the form for creating a new resource.
+     * @return Response|ResponseFactory
      */
     public function create()
     {
-        return inertia('Contact/Create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        Contact::create($request->all());
-
-        return to_route('contacts.index');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        return inertia('Contacts/Create');
     }
 
     /**
@@ -49,22 +27,71 @@ class ContactController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $validation = $this->factory->createShowValidation();
+        $data = $validation->validateCustomData(
+            compact('id')
+        );
+
+        $service = $this->factory->createService();
+        $model = $service->find($data['id']);
+
+        $this->authorize('view', $model);
+
+        return inertia('Contacts/Create', compact('model'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * @param $resource
+     * @param  int  $status
+     * @param $additional
+     * @return Response|ResponseFactory|mixed
      */
-    public function update(Request $request, string $id)
+    protected function responseIndex($resource, int $status = 200, $additional = null)
     {
-        //
+        return inertia('Contacts/Index', ['contacts' => $resource]);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @param $resource
+     * @param  int  $status
+     * @param $additional
+     * @return \Illuminate\Http\RedirectResponse|mixed
      */
-    public function destroy(string $id)
+    protected function responseStore($resource, int $status = 200, $additional = null)
     {
-        //
+        return to_route('contacts.index');
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param $additional
+     * @return Response|ResponseFactory|mixed
+     */
+    protected function responseShow($resource, int $status = 200, $additional = null)
+    {
+        return inertia('Contacts/Show', ['contact' => $resource]);
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param $additional
+     * @return \Illuminate\Http\RedirectResponse|mixed
+     */
+    protected function responseUpdate($resource, int $status = 200, $additional = null)
+    {
+        return to_route('contacts.index');
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param $additional
+     * @return \Illuminate\Http\RedirectResponse|mixed
+     */
+    protected function responseDestroy($resource, int $status = 200, $additional = null)
+    {
+        return to_route('contacts.index');
     }
 }

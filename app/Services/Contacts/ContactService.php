@@ -19,9 +19,9 @@ class ContactService implements EntityServiceInterface
         $this->repository = $repository;
     }
 
-    public function getList(array $params = []): LengthAwarePaginator
+    public function getList(array $params = [], int $per_page = 10): LengthAwarePaginator
     {
-        return $this->repository->getList($params);
+        return $this->repository->getList($params, $per_page);
     }
 
     public function create(array $data): Model

@@ -74,9 +74,10 @@ abstract class AbstractCrudRepository implements CrudRepositoryInterface
 
     /**
      * @param  array  $params
+     * @param  int  $per_page
      * @return LengthAwarePaginator
      */
-    public function getList(array $params = []): LengthAwarePaginator
+    public function getList(array $params = [], int $per_page = 20): LengthAwarePaginator
     {
         $query = $this->query();
 
@@ -84,6 +85,6 @@ abstract class AbstractCrudRepository implements CrudRepositoryInterface
             $query->where('user_id', '=', $params['user_id']);
         }
 
-        return $query->paginate();
+        return $query->paginate($per_page);
     }
 }

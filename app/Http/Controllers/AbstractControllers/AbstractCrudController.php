@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\v1\AbstractControllers;
+namespace App\Http\Controllers\AbstractControllers;
 
 use App\Contracts\Controllers\Factories\ControllerFactoryInterface;
 use App\Http\Controllers\Controller;
@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Arr;
@@ -25,7 +24,7 @@ abstract class AbstractCrudController extends Controller
     /**
      * @var ControllerFactoryInterface
      */
-    private ControllerFactoryInterface $factory;
+    protected ControllerFactoryInterface $factory;
 
     /**
      * @param  ControllerFactoryInterface  $factory
@@ -37,11 +36,11 @@ abstract class AbstractCrudController extends Controller
 
     /**
      * @param  Request  $request
-     * @return JsonResponse
+     * @return mixed
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         /** @var User $user */
         $user = Auth::user();
@@ -56,17 +55,15 @@ abstract class AbstractCrudController extends Controller
         $service = $this->factory->createService();
         $result = $service->getList($params);
 
-        $resource = $this->factory->createIndexResource($result);
-
-        return $this->response($resource);
+        return $this->responseIndex($result);
     }
 
     /**
      * @param  int  $id
-     * @return JsonResponse
+     * @return mixed
      * @throws AuthorizationException|ValidationException
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id)
     {
         $validation = $this->factory->createShowValidation();
         $data = $validation->validateCustomData(
@@ -78,18 +75,16 @@ abstract class AbstractCrudController extends Controller
 
         $this->authorize('view', $model);
 
-        $resource = $this->factory->createShowResource($model);
-
-        return $this->response($resource);
+        return $this->responseShow($model);
     }
 
     /**
      * @param  Request  $request
-     * @return JsonResponse
+     * @return mixed
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         /** @var User $user */
         $user = Auth::user();
@@ -104,19 +99,17 @@ abstract class AbstractCrudController extends Controller
         $service = $this->factory->createService();
         $model = $service->create($data);
 
-        $resource = $this->factory->createStoreResource($model->refresh());
-
-        return $this->response($resource);
+        return $this->responseStore($model->refresh());
     }
 
     /**
      * @param  Request  $request
      * @param  int  $id
-     * @return JsonResponse
+     * @return mixed
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, int $id)
     {
         $request_data = $request->all();
         $request_data['id'] = $id;
@@ -132,18 +125,16 @@ abstract class AbstractCrudController extends Controller
 
         $service->update($model, $data);
 
-        $resource = $this->factory->createUpdateResource($model->refresh());
-
-        return $this->response($resource);
+        return $this->responseUpdate($model->refresh());
     }
 
     /**
      * @param  int  $id
-     * @return JsonResponse
+     * @return mixed
      * @throws AuthorizationException
      * @throws ValidationException
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $id)
     {
         $validation = $this->factory->createDestroyValidation();
         $data = $validation->validateCustomData(
@@ -157,14 +148,14 @@ abstract class AbstractCrudController extends Controller
 
         $service->delete($model);
 
-        return $this->response('', 204);
+        return $this->responseDestroy('', 204);
     }
 
     /**
      * @param mixed|Model|Collection|JsonResource $resource
      * @param int $status
      * @param mixed|null $additional
-     * @return mixed|JsonResource|JsonResponse
+     * @return mixed
      */
     protected function response($resource, int $status = 200, $additional = null)
     {
@@ -183,6 +174,69 @@ abstract class AbstractCrudController extends Controller
         }
 
         return response()->json($resource, $status);
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param mixed $additional
+     * @return mixed
+     */
+    protected function responseIndex($resource, int $status = 200, $additional = null)
+    {
+        $resource = $this->factory->createIndexResource($resource);
+
+        return $this->response($resource, $status, $additional);
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param mixed $additional
+     * @return mixed
+     */
+    protected function responseShow($resource, int $status = 200, $additional = null)
+    {
+        $resource = $this->factory->createShowResource($resource);
+
+        return $this->response($resource, $status, $additional);
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param mixed $additional
+     * @return mixed
+     */
+    protected function responseStore($resource, int $status = 200, $additional = null)
+    {
+        $resource = $this->factory->createStoreResource($resource);
+
+        return $this->response($resource, $status, $additional);
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param mixed $additional
+     * @return mixed
+     */
+    protected function responseUpdate($resource, int $status = 200, $additional = null)
+    {
+        $resource = $this->factory->createUpdateResource($resource);
+
+        return $this->response($resource, $status, $additional);
+    }
+
+    /**
+     * @param $resource
+     * @param  int  $status
+     * @param mixed $additional
+     * @return mixed
+     */
+    protected function responseDestroy($resource, int $status = 200, $additional = null)
+    {
+        return $this->response($resource, $status, $additional);
     }
 
     /**
